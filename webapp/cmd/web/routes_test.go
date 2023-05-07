@@ -29,7 +29,6 @@ func Test_application_routes(t *testing.T) {
 		}
 		//Check to see if the route exist
 	}
-
 }
 
 func routeExist(testRoute string, testMethod string, chiRoutes chi.Routes) bool {
