@@ -1,7 +1,9 @@
 package main
 
 import (
+	"fmt"
 	"html/template"
+	"log"
 	"net/http"
 	"path"
 )
@@ -22,6 +24,8 @@ func (app *Application) render(w http.ResponseWriter, r *http.Request, t string,
 	//Parse Template from Disk
 	parsedTemplate, err := template.ParseFiles(path.Join(pathToTemplates, t))
 
+	data.IP = app.ipFromContext(r.Context())
+
 	if err != nil {
 		http.Error(w, "Bad Request", http.StatusBadRequest)
 		return err
@@ -33,4 +37,19 @@ func (app *Application) render(w http.ResponseWriter, r *http.Request, t string,
 	}
 
 	return nil
+}
+
+func (app *Application) Login(w http.ResponseWriter, r *http.Request) {
+	err := r.ParseForm()
+	if err != nil {
+		log.Println(err)
+		http.Error(w, "bad request", http.StatusBadRequest)
+		return
+	}
+	email := r.Form.Get("email")
+	password := r.Form.Get("password")
+
+	log.Println(email, password)
+	fmt.Fprintf(w, email)
+
 }
