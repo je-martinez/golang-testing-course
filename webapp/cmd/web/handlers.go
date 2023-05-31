@@ -22,7 +22,7 @@ type TemplateData struct {
 func (app *Application) render(w http.ResponseWriter, r *http.Request, t string, data *TemplateData) error {
 
 	//Parse Template from Disk
-	parsedTemplate, err := template.ParseFiles(path.Join(pathToTemplates, t))
+	parsedTemplate, err := template.ParseFiles(path.Join(pathToTemplates, t), path.Join(pathToTemplates, "base.layout.gohtml"))
 
 	data.IP = app.ipFromContext(r.Context())
 
