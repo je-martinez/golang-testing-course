@@ -61,12 +61,22 @@ func (app *Application) Login(w http.ResponseWriter, r *http.Request) {
 	form.Required("email", "password")
 
 	if !form.Valid() {
-		fmt.Fprint(w, "Failed validation")
+		//redirect to login page with error message
+		app.Session.Put(r.Context(), "error", "Invalid login credentials")
+		http.Redirect(w, r, "/", http.StatusSeeOther)
 		return
 	}
 
 	email := r.Form.Get("email")
 	password := r.Form.Get("password")
+
+	user, err := app.DB.GetUserByEmail(email)
+
+	if err != nil {
+		log.Println(err)
+	}
+
+	log.Println("From database", user.FirstName)
 
 	log.Println(email, password)
 	fmt.Fprint(w, email)
