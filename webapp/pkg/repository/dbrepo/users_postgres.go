@@ -243,5 +243,4 @@ func (m *PostgresDBRepo) InsertUserImage(i data.UserImage) (int, error) {
 	}
 
 	return newID, nil
-
 }

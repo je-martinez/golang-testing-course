@@ -16,6 +16,7 @@ func (m *TestDBRepo) Connection() *sql.DB {
 // AllUsers returns all users as a slice of *data.User
 func (m *TestDBRepo) AllUsers() ([]*data.User, error) {
 	var users []*data.User
+
 	return users, nil
 }
 
@@ -24,25 +25,25 @@ func (m *TestDBRepo) GetUser(id int) (*data.User, error) {
 	var user = data.User{
 		ID: 1,
 	}
+
 	return &user, nil
 }
 
 // GetUserByEmail returns one user by email address
 func (m *TestDBRepo) GetUserByEmail(email string) (*data.User, error) {
-
 	if email == "admin@example.com" {
-
-		return &data.User{
-			ID:        1,
+		user := data.User{
+			ID: 1,
 			FirstName: "Admin",
-			LastName:  "Admin",
-			Password:  "$2a$14$ajq8Q7fbtFRQvXpdCq7Jcuy.Rx1h/L4J60Otx.gyNLbAYctGMJ9tK",
-			IsAdmin:   1,
+			LastName: "User",
+			Email: "admin@example.com",
+			Password: "$2a$14$ajq8Q7fbtFRQvXpdCq7Jcuy.Rx1h/L4J60Otx.gyNLbAYctGMJ9tK",
+			IsAdmin: 1,
 			CreatedAt: time.Now(),
 			UpdatedAt: time.Now(),
-		}, nil
+		}
+		return &user, nil
 	}
-
 	return nil, errors.New("not found")
 }
 
