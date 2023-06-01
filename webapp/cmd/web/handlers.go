@@ -1,12 +1,12 @@
 package main
 
 import (
-	"fmt"
 	"html/template"
 	"log"
 	"net/http"
 	"path"
 	"time"
+	"webapp/pkg/data"
 )
 
 var pathToTemplates = "./templates/"
@@ -25,23 +25,29 @@ func (app *Application) Home(w http.ResponseWriter, r *http.Request) {
 }
 
 type TemplateData struct {
-	IP   string
-	Data map[string]any
+	IP    string
+	Data  map[string]any
+	Error string
+	Flash string
+	User  data.User
 }
 
-func (app *Application) render(w http.ResponseWriter, r *http.Request, t string, data *TemplateData) error {
+func (app *Application) render(w http.ResponseWriter, r *http.Request, t string, td *TemplateData) error {
 
 	//Parse Template from Disk
 	parsedTemplate, err := template.ParseFiles(path.Join(pathToTemplates, t), path.Join(pathToTemplates, "base.layout.gohtml"))
 
-	data.IP = app.ipFromContext(r.Context())
+	td.IP = app.ipFromContext(r.Context())
 
 	if err != nil {
 		http.Error(w, "Bad Request", http.StatusBadRequest)
 		return err
 	}
 
-	err = parsedTemplate.Execute(w, data)
+	td.Error = app.Session.PopString(r.Context(), "error")
+	td.Flash = app.Session.PopString(r.Context(), "flash")
+
+	err = parsedTemplate.Execute(w, td)
 	if err != nil {
 		return nil
 	}
@@ -73,12 +79,28 @@ func (app *Application) Login(w http.ResponseWriter, r *http.Request) {
 	user, err := app.DB.GetUserByEmail(email)
 
 	if err != nil {
-		log.Println(err)
+		app.Session.Put(r.Context(), "error", "Invalid login!")
+		http.Redirect(w, r, "/", http.StatusSeeOther)
+		return
 	}
 
-	log.Println("From database", user.FirstName)
+	log.Println(user)
+	log.Println(password)
 
-	log.Println(email, password)
-	fmt.Fprint(w, email)
+	//authenticate the user
 
+	//if not authenticated then redirect with error
+
+	//prevent fixation attack
+	_ = app.Session.RenewToken(r.Context())
+
+	//store success message in session
+
+	//redirect to some other page
+	app.Session.Put(r.Context(), "flash", "Successfully logged in!")
+	http.Redirect(w, r, "/user/profile", http.StatusSeeOther)
+}
+
+func (app *Application) Profile(w http.ResponseWriter, r *http.Request) {
+	_ = app.render(w, r, "profile.page.gohtml", &TemplateData{})
 }
