@@ -69,6 +69,6 @@ func (app *Application) Login(w http.ResponseWriter, r *http.Request) {
 	password := r.Form.Get("password")
 
 	log.Println(email, password)
-	fmt.Fprintf(w, email)
+	fmt.Fprint(w, email)
 
 }
