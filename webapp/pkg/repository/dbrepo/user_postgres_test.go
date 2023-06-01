@@ -16,9 +16,9 @@ import (
 
 var (
 	host     = "localhost"
-	dbName   = "users_test"
 	user     = "postgres"
 	password = "postgres"
+	dbName   = "users_test"
 	port     = "5435"
 	dsn      = "host=%s port=%s user=%s password=%s dbname=%s sslmode=disable timezone=UTC connect_timeout=5"
 )
@@ -28,9 +28,8 @@ var pool *dockertest.Pool
 var testDB *sql.DB
 
 func TestMain(m *testing.M) {
-	//connect to docker; fail if docker not running
+	// connect to docker; fail if docker not running
 	p, err := dockertest.NewPool("")
-
 	if err != nil {
 		log.Fatalf("could not connect to docker; is it running? %s", err)
 	}
@@ -38,7 +37,6 @@ func TestMain(m *testing.M) {
 	pool = p
 
 	// set up our docker options, specifying the image and so forth
-
 	opts := dockertest.RunOptions{
 		Repository: "postgres",
 		Tag:        "14.5",
@@ -55,15 +53,14 @@ func TestMain(m *testing.M) {
 		},
 	}
 
-	//get a resource (docker image)
+	// get a resource (docker image)
 	resource, err = pool.RunWithOptions(&opts)
-
 	if err != nil {
 		_ = pool.Purge(resource)
 		log.Fatalf("could not start resource: %s", err)
 	}
 
-	//start the image and wait until it's ready
+	// start the image and wait until it's ready
 	if err := pool.Retry(func() error {
 		var err error
 		testDB, err = sql.Open("pgx", fmt.Sprintf(dsn, host, port, user, password, dbName))
@@ -77,31 +74,42 @@ func TestMain(m *testing.M) {
 		log.Fatalf("could not connect to database: %s", err)
 	}
 
-	//populate the database with empty tables
-
+	// populate the database with empty tables
 	err = createTables()
 	if err != nil {
 		log.Fatalf("error creating tables: %s", err)
 	}
 
-	//run test
+	// run tests
 	code := m.Run()
 
-	//clean up
+	// clean up
+	if err := pool.Purge(resource); err != nil {
+		log.Fatalf("could not purge resource: %s", err)
+	}
 
 	os.Exit(code)
 }
 
 func createTables() error {
-	tablesSQL, err := os.ReadFile("./testdata/users.sql")
+	tableSQL, err := os.ReadFile("./testdata/users.sql")
 	if err != nil {
 		fmt.Println(err)
 		return err
 	}
-	_, err = testDB.Exec(string(tablesSQL))
+
+	_, err = testDB.Exec(string(tableSQL))
 	if err != nil {
 		fmt.Println(err)
 		return err
 	}
+
 	return nil
+}
+
+func Test_pingDB(t *testing.T) {
+	err := testDB.Ping()
+	if err != nil {
+		t.Error("can't ping database")
+	}
 }

@@ -76,38 +76,6 @@ ALTER TABLE public.users ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
     CACHE 1
 );
 
-
---
--- Data for Name: user_images; Type: TABLE DATA; Schema: public; Owner: -
---
-
-COPY public.user_images (id, user_id, file_name, created_at, updated_at) FROM stdin;
-\.
-
-
---
--- Data for Name: users; Type: TABLE DATA; Schema: public; Owner: -
---
-
-COPY public.users (id, first_name, last_name, email, password, is_admin, created_at, updated_at) FROM stdin;
-1	Admin	User	admin@example.com	$2a$14$ajq8Q7fbtFRQvXpdCq7Jcuy.Rx1h/L4J60Otx.gyNLbAYctGMJ9tK	1	2022-08-19 00:00:00	2022-08-19 00:00:00
-\.
-
-
---
--- Name: user_images_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
---
-
-SELECT pg_catalog.setval('public.user_images_id_seq', 1, false);
-
-
---
--- Name: users_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
---
-
-SELECT pg_catalog.setval('public.users_id_seq', 1, true);
-
-
 --
 -- Name: user_images user_images_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
