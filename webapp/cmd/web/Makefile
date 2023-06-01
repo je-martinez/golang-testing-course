@@ -1,8 +1,8 @@
 test:
 	go test . -v
-coverage:
+cov:
 	go test -coverprofile=coverage.out
-coverage-html:
-	make coverage && go tool cover -html=coverage.out
+cov-html:
+	make cov && go tool cover -html=coverage.out
 test-suite:
 	go test -v -run $(suite)

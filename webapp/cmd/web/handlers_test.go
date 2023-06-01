@@ -27,8 +27,6 @@ func Test_application_handlers(t *testing.T) {
 
 	//range through test data
 
-	pathToTemplates = "./../../templates/"
-
 	for _, e := range theTests {
 		resp, err := ts.Client().Get(ts.URL + e.url)
 		if err != nil {
@@ -43,24 +41,40 @@ func Test_application_handlers(t *testing.T) {
 }
 
 func TestAppHome(t *testing.T) {
-	//create a request
-	req, _ := http.NewRequest("GET", "/", nil)
-	req = addContextAndSessionToRequest(req, app)
-	rr := httptest.NewRecorder()
-	handler := http.HandlerFunc(app.Home)
-	handler.ServeHTTP(rr, req)
-
-	//check status code
-	if rr.Code != http.StatusOK {
-		t.Errorf("TestAppHome return wrong status code; expected 200 but got %d", rr.Code)
+	var tests = []struct {
+		name         string
+		putInSession string
+		expectedHtml string
+	}{
+		{"first visit", "", "<small> From Session"},
+		{"second visit", "hello world!", "<small> From Session hello world!"},
 	}
 
-	body, _ := io.ReadAll(rr.Body)
+	for _, e := range tests {
+		//create a request
+		req, _ := http.NewRequest("GET", "/", nil)
+		req = addContextAndSessionToRequest(req, app)
+		_ = app.Session.Destroy(req.Context())
 
-	if !strings.Contains(string(body), `<small> From Session `) {
-		t.Error("did not find correct text in html")
+		if e.putInSession != "" {
+			app.Session.Put(req.Context(), "test", e.putInSession)
+		}
+
+		rr := httptest.NewRecorder()
+		handler := http.HandlerFunc(app.Home)
+		handler.ServeHTTP(rr, req)
+
+		//check status code
+		if rr.Code != http.StatusOK {
+			t.Errorf("TestAppHome return wrong status code; expected 200 but got %d", rr.Code)
+		}
+
+		body, _ := io.ReadAll(rr.Body)
+
+		if !strings.Contains(string(body), e.expectedHtml) {
+			t.Errorf("%s: did not find %s in response body", e.name, e.expectedHtml)
+		}
 	}
-
 }
 
 func getCtx(req *http.Request) context.Context {
@@ -72,4 +86,18 @@ func addContextAndSessionToRequest(req *http.Request, app Application) *http.Req
 	req = req.WithContext(getCtx(req))
 	ctx, _ := app.Session.Load(req.Context(), req.Header.Get("X-Session"))
 	return req.WithContext(ctx)
+}
+
+func TestApp_renderWithBadTemplate(t *testing.T) {
+	//set template path to location with a bad template
+	pathToTemplates = "./testdata"
+
+	req, _ := http.NewRequest("GET", "/", nil)
+	req = addContextAndSessionToRequest(req, app)
+	rr := httptest.NewRecorder()
+
+	err := app.render(rr, req, "bad.page.gohtml", &TemplateData{})
+	if err == nil {
+		t.Error("expected error from bad template, but did not get one")
+	}
 }
