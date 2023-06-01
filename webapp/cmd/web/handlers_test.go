@@ -100,4 +100,5 @@ func TestApp_renderWithBadTemplate(t *testing.T) {
 	if err == nil {
 		t.Error("expected error from bad template, but did not get one")
 	}
+	pathToTemplates = "./../../templates/"
 }

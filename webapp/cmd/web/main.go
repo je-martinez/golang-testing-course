@@ -23,12 +23,13 @@ func main() {
 	flag.StringVar(&app.DSN, "dsn", "host=localhost port=5433 user=postgres password=postgres dbname=users sslmode=disable timezone=UTC connect_timeout=5", "Postgres Connection")
 	flag.Parse()
 
-	db, err := app.connectToDB()
+	conn, err := app.connectToDB()
 	if err != nil {
 		log.Fatal(err)
 	}
+	defer conn.Close()
 
-	app.DB = db
+	app.DB = conn
 
 	//get a session manager
 	app.Session = getSession()
