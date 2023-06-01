@@ -219,3 +219,38 @@ func TestPostgresDBRepoUpdateUser(t *testing.T) {
 		t.Errorf("expected updated record to have first name Jane and email jane@smith.com, but got %s %s", user.FirstName, user.Email)
 	}
 }
+
+func TestPostgresDBRepoDeleteUser(t *testing.T) {
+	err := testRepo.DeleteUser(2)
+
+	if err != nil {
+		t.Errorf("error deleting user id 2: %s", err)
+	}
+
+	_, err = testRepo.GetUser(2)
+
+	if err == nil {
+		t.Errorf("retrieve user id 2, who should have been deleted")
+	}
+
+}
+
+func TestPostgresDBRepoResetPassword(t *testing.T) {
+
+	err := testRepo.ResetPassword(1, "new-password")
+
+	if err != nil {
+		t.Error("error resseting user's password", err)
+	}
+
+	user, _ := testRepo.GetUser(1)
+	matches, err := user.PasswordMatches("new-password")
+	if err != nil {
+		t.Error(err)
+	}
+
+	if !matches {
+		t.Errorf("password should match 'password', but it's not %s", err)
+	}
+
+}
