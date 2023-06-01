@@ -123,10 +123,10 @@ func Test_pingDB(t *testing.T) {
 func TestPostgresDBRepoInsertUser(t *testing.T) {
 	testUser := data.User{
 		FirstName: "Admin",
-		LastName: "User",
-		Email: "admin@example.com",
-		Password: "secret",
-		IsAdmin: 1,
+		LastName:  "User",
+		Email:     "admin@example.com",
+		Password:  "secret",
+		IsAdmin:   1,
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
 	}
@@ -141,3 +141,37 @@ func TestPostgresDBRepoInsertUser(t *testing.T) {
 	}
 }
 
+func TestPostgresDBRepoAllUser(t *testing.T) {
+	users, err := testRepo.AllUsers()
+
+	if err != nil {
+		t.Errorf("all users reports an err: %s", err)
+	}
+
+	if len(users) != 1 {
+		t.Errorf("all users reports wrong size; expected 1, but got %d", len(users))
+	}
+
+	testUser := data.User{
+		FirstName: "Admin",
+		LastName:  "User",
+		Email:     "admin@example.com",
+		Password:  "secret",
+		IsAdmin:   1,
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+	}
+
+	_, _ = testRepo.InsertUser(testUser)
+
+	users, err = testRepo.AllUsers()
+
+	if err != nil {
+		t.Errorf("all users reports an err: %s", err)
+	}
+
+	if len(users) != 2 {
+		t.Errorf("all users reports wrong size; expected 2, but got %d", len(users))
+	}
+
+}
