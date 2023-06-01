@@ -55,6 +55,10 @@ func (app *Application) render(w http.ResponseWriter, r *http.Request, t string,
 	return nil
 }
 
+func (app *Application) Profile(w http.ResponseWriter, r *http.Request) {
+	_ = app.render(w, r, "profile.page.gohtml", &TemplateData{})
+}
+
 func (app *Application) Login(w http.ResponseWriter, r *http.Request) {
 	err := r.ParseForm()
 	if err != nil {
@@ -84,23 +88,26 @@ func (app *Application) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	log.Println(user)
-	log.Println(password)
-
 	//authenticate the user
 
-	//if not authenticated then redirect with error
+	if !app.authenticate(r, user, password) {
+		app.Session.Put(r.Context(), "error", "Invalid login!")
+		http.Redirect(w, r, "/", http.StatusSeeOther)
+		return
+	}
 
 	//prevent fixation attack
 	_ = app.Session.RenewToken(r.Context())
-
-	//store success message in session
 
 	//redirect to some other page
 	app.Session.Put(r.Context(), "flash", "Successfully logged in!")
 	http.Redirect(w, r, "/user/profile", http.StatusSeeOther)
 }
 
-func (app *Application) Profile(w http.ResponseWriter, r *http.Request) {
-	_ = app.render(w, r, "profile.page.gohtml", &TemplateData{})
+func (app *Application) authenticate(r *http.Request, user *data.User, password string) bool {
+	if valid, err := user.PasswordMatches(password); err != nil || !valid {
+		return false
+	}
+	app.Session.Put(r.Context(), "user", user)
+	return true
 }
