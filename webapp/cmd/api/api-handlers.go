@@ -2,7 +2,6 @@ package main
 
 import (
 	"errors"
-	"log"
 	"net/http"
 )
 
@@ -18,14 +17,13 @@ func (app *Application) authenticate(w http.ResponseWriter, r *http.Request) {
 	err := app.readJSON(w, r, &creds)
 
 	if err != nil {
-		app.errorJSON(w, errors.New("unauthorized"), http.StatusUnauthorized)
+		app.errorJSON(w, errors.New("unauthorized"))
 		return
 	}
 
 	//look up the user by email address
 	user, err := app.DB.GetUserByEmail(creds.Username)
 	if err != nil {
-		log.Println("Holis3", err)
 		app.errorJSON(w, errors.New("unauthorized"), http.StatusUnauthorized)
 		return
 	}
