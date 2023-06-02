@@ -171,7 +171,7 @@ func (app *Application) UploadFiles(r *http.Request, uploadDir string) ([]*Uploa
 
 	for _, fHeaders := range r.MultipartForm.File {
 		for _, hdr := range fHeaders {
-			_, err := func(uploadedFiles []*UploadFile) ([]*UploadFile, error) {
+			uploadedFiles, err = func(uploadedFiles []*UploadFile) ([]*UploadFile, error) {
 				var uploadedFile UploadFile
 				infile, err := hdr.Open()
 				if err != nil {
