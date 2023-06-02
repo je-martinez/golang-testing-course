@@ -242,6 +242,7 @@ func Test_app_UploadFiles(t *testing.T) {
 
 	//clean up
 	_ = os.Remove(fmt.Sprintf("./testdata/uploads/%s", uploadedFiles[0].OriginalFileName))
+	wg.Wait()
 
 }
 
