@@ -51,6 +51,10 @@ func (app *Application) render(w http.ResponseWriter, r *http.Request, t string,
 	td.Error = app.Session.PopString(r.Context(), "error")
 	td.Flash = app.Session.PopString(r.Context(), "flash")
 
+	if app.Session.Exists(r.Context(), "user") {
+		td.User = app.Session.Get(r.Context(), "user").(data.User)
+	}
+
 	err = parsedTemplate.Execute(w, td)
 	if err != nil {
 		return nil
