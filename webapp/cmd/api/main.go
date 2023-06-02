@@ -36,4 +36,7 @@ func main() {
 	log.Printf("Starting api on port %d", port)
 
 	err = http.ListenAndServe(fmt.Sprintf(":%d", port), app.routes())
+	if err != nil {
+		log.Fatal(err)
+	}
 }
