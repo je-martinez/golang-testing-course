@@ -32,7 +32,8 @@ func (app *Application) routes() http.Handler {
 
 	// protected routes
 
-	mux.Route("/user", func(mux chi.Router) {
+	mux.Route("/users", func(mux chi.Router) {
+		mux.Use(app.authRequired)
 		mux.Get("/", app.allUsers)
 		mux.Get("/{userID}", app.getUser)
 		mux.Delete("/{userID}", app.deleteUser)
