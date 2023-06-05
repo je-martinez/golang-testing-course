@@ -1,6 +1,16 @@
-## Auth
+### Auth
 
 POST http://localhost:8090/auth
+Content-Type: application/json
+
+{
+    "email": "admin@example.com",
+    "password": "secret"
+}
+
+### Auth Web
+
+POST http://localhost:8090/web/auth
 Content-Type: application/json
 
 {
