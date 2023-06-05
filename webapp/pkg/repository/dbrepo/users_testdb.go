@@ -22,23 +22,32 @@ func (m *TestDBRepo) AllUsers() ([]*data.User, error) {
 
 // GetUser returns one user by id
 func (m *TestDBRepo) GetUser(id int) (*data.User, error) {
-	var user = data.User{
-		ID: 1,
+
+	var user = data.User{}
+
+	if id == 1 {
+		user = data.User{
+			ID:        1,
+			FirstName: "Admin",
+			LastName:  "User",
+			Email:     "admin@example.com",
+		}
+		return &user, nil
 	}
 
-	return &user, nil
+	return nil, errors.New("user not found")
 }
 
 // GetUserByEmail returns one user by email address
 func (m *TestDBRepo) GetUserByEmail(email string) (*data.User, error) {
 	if email == "admin@example.com" {
 		user := data.User{
-			ID: 1,
+			ID:        1,
 			FirstName: "Admin",
-			LastName: "User",
-			Email: "admin@example.com",
-			Password: "$2a$14$ajq8Q7fbtFRQvXpdCq7Jcuy.Rx1h/L4J60Otx.gyNLbAYctGMJ9tK",
-			IsAdmin: 1,
+			LastName:  "User",
+			Email:     "admin@example.com",
+			Password:  "$2a$14$ajq8Q7fbtFRQvXpdCq7Jcuy.Rx1h/L4J60Otx.gyNLbAYctGMJ9tK",
+			IsAdmin:   1,
 			CreatedAt: time.Now(),
 			UpdatedAt: time.Now(),
 		}
