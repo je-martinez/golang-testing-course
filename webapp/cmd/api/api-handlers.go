@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strconv"
 	"time"
+	"webapp/pkg/data"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/golang-jwt/jwt/v4"
@@ -135,13 +136,51 @@ func (app *Application) getUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *Application) updateUser(w http.ResponseWriter, r *http.Request) {
+	var user data.User
+	err := app.readJSON(w, r, &user)
+	if err != nil {
+		app.errorJSON(w, err, http.StatusBadRequest)
+		return
+	}
 
+	err = app.DB.UpdateUser(user)
+	if err != nil {
+		app.errorJSON(w, err, http.StatusBadRequest)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
 }
 
 func (app *Application) deleteUser(w http.ResponseWriter, r *http.Request) {
+	userID, err := strconv.Atoi(chi.URLParam(r, "userID"))
+	if err != nil {
+		app.errorJSON(w, err, http.StatusBadRequest)
+		return
+	}
 
+	err = app.DB.DeleteUser(userID)
+	if err != nil {
+		app.errorJSON(w, err, http.StatusBadRequest)
+		return
+	}
+	w.WriteHeader(http.StatusNoContent)
 }
 
 func (app *Application) insertUser(w http.ResponseWriter, r *http.Request) {
+	var user data.User
+	err := app.readJSON(w, r, &user)
+	if err != nil {
+		app.errorJSON(w, err, http.StatusBadRequest)
+		return
+	}
+
+	_, err = app.DB.InsertUser(user)
+	if err != nil {
+		app.errorJSON(w, err, http.StatusBadRequest)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
 
 }
