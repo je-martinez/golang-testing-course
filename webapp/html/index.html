@@ -102,6 +102,39 @@
         refreshTokens();
       });
 
+      logoutBtn.addEventListener("click", function () {
+        access_token = "";
+        refresh_token = "";
+
+        fetch("/web/logout")
+          .then((response) => {
+            setUI(false);
+          })
+          .catch((err) => {
+            userOutput.innerHTML = err;
+          });
+      });
+
+      userBtn.addEventListener("click", function () {
+        const myHeaders = new Headers();
+        myHeaders.append("Content-Type", "application/json");
+        myHeaders.append("Authorization", `Bearer ${access_token}`);
+
+        const requestOptions = {
+          method: "GET",
+          headers: myHeaders,
+        };
+
+        fetch("users/1", requestOptions)
+          .then((response) => response.json())
+          .then((data) => {
+            userOutput.innerHTML = JSON.stringify(data, undefined, 4);
+          })
+          .catch((error) => {
+            userOutput.innerHTML = "Log in first";
+          });
+      });
+
       let refreshRunning = false;
       let refreshTime = new Date();
       let secondsRemaining = (600 - refreshTime.getSeconds()) * 1000; //every 10 minutes
