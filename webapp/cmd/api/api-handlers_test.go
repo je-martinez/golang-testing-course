@@ -183,3 +183,91 @@ func Test_app_userHandlers(t *testing.T) {
 	}
 
 }
+
+func Test_app_refreshUsingCookie(t *testing.T) {
+	testUser := data.User{
+		ID:        1,
+		FirstName: "Admin",
+		LastName:  "User",
+		Email:     "admin@example.com",
+	}
+
+	tokens, _ := app.generateTokenPair(&testUser)
+
+	testCookie := &http.Cookie{
+		Name:     "_Host-refresh-token",
+		Path:     "/",
+		Value:    tokens.RefreshToken,
+		Expires:  time.Now().Add(refreshTokenExpiry),
+		MaxAge:   int(refreshTokenExpiry.Seconds()),
+		SameSite: http.SameSiteStrictMode,
+		Domain:   "localhost",
+		HttpOnly: true,
+		Secure:   true,
+	}
+
+	badCookie := &http.Cookie{
+		Name:     "_Host-refresh-token",
+		Path:     "/",
+		Value:    "invalid-token-value",
+		Expires:  time.Now().Add(refreshTokenExpiry),
+		MaxAge:   int(refreshTokenExpiry.Seconds()),
+		SameSite: http.SameSiteStrictMode,
+		Domain:   "localhost",
+		HttpOnly: true,
+		Secure:   true,
+	}
+
+	var tests = []struct {
+		name               string
+		addCookie          bool
+		cookie             *http.Cookie
+		expectedStatusCode int
+	}{
+		{"valid cookie", true, testCookie, http.StatusOK},
+		{"invalid cookie", true, badCookie, http.StatusBadRequest},
+		{"no cookie", false, nil, http.StatusUnauthorized},
+	}
+
+	for _, e := range tests {
+		rr := httptest.NewRecorder()
+
+		req, _ := http.NewRequest("GET", "/", nil)
+		if e.addCookie {
+			req.AddCookie(e.cookie)
+		}
+
+		handler := http.HandlerFunc(app.refreshUsingCookie)
+		handler.ServeHTTP(rr, req)
+
+		if rr.Code != e.expectedStatusCode {
+			t.Errorf("%s: wrong status code, expected %d but received %d", e.name, e.expectedStatusCode, rr.Code)
+		}
+
+	}
+}
+
+func Test_app_deleteRefreshCookie(t *testing.T) {
+	req, _ := http.NewRequest("GET", "/logout", nil)
+	rr := httptest.NewRecorder()
+	handler := http.HandlerFunc(app.deleteRefreshCookie)
+	handler.ServeHTTP(rr, req)
+
+	if rr.Code != http.StatusAccepted {
+		t.Errorf("wrong status code, expected %d but received %d", http.StatusAccepted, rr.Code)
+	}
+
+	foundCookie := false
+
+	for _, c := range rr.Result().Cookies() {
+		if c.Name == "_Host-refresh-token" {
+			foundCookie = true
+			if c.Expires.After(time.Now()) {
+				t.Errorf("cookie expiration in future, and should not be %v", c.Expires.UTC())
+			}
+		}
+	}
+	if !foundCookie {
+		t.Errorf("_Host-refresh-token not found!!!")
+	}
+}
